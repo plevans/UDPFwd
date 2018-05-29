@@ -1,15 +1,5 @@
 
-# Windows Installers for Compiled Versions
-These will also install the example design files for the cfd and mechancial examples.
-* [https://www.dropbox.com/sh/x99pkg8y555v2sz/AAAvJo3iJpQQjXNmErNOUTrga?dl=0](https://www.dropbox.com/sh/x99pkg8y555v2sz/AAAvJo3iJpQQjXNmErNOUTrga?dl=0)
 
-# Required Libraries
-* Gtk3 - Graphical User Interface toolkit
-* Gtk SourceView - For script highlighting and formatting within GUI
-* Glew - Interface to OpenGL for 3D rendering
-* SuiteSparse - Contains the default matrix solver, KLU
-* Graphene - Small, low level matrix library for graphics. Used to generate transform matrices for OpenGL
-* Adwaita-Slim theme for Gtk3 - Optional but replaces the chunky standard theme which is awkward on small screens.
 
 # Compiling on Windows
 ## Installing compiler and libraries
