@@ -3,7 +3,6 @@
 
 # Compiling on Windows
 ## Installing compiler and libraries
-Use the MinGW-w64 compiler, if you try to use 32bit MinGW or Visual Studio you will need to ensure you can obtain/build all necessary dependencies whereas I've already done this for MinGW-w64.
 ### Download MSys from http://www.msys2.org
 Once installed, open a MSys 64-bit terminal window and use the built in package manager to download the required packages. This could take some time.
 * `pacman -Syu` - download core packages (you may then need to restart MSys and re-run this command)
@@ -19,8 +18,6 @@ No MSys packages exist for the remaining packages but there are links archives c
 
 
 ## Install Git and obtain a copy of the source code
-Either:
-
 * Download git for windows from the [git website](https://git-scm.com/download/win)
 * Create a directory somewhere for the source code (e.g. UDP_Forwarder), open a windows terminal and `cd` to it, then clone a copy of the source code to the new directory: 
 	`git clone https://github.com/plevans/UDPFwd.git`. 
@@ -33,11 +30,11 @@ Either:
 ~~~~
 	 UDP_Forwarder							<- this is the parent directory that you created to contain the source code
 		|- UDPFwd 						<- This is the sub-directory cloned from github that contains all the source code
-		|- eclipse_build				<- A new, empty sub-directory that will be used to build the software
+		|- eclipse_build					<- A new, empty sub-directory that will be used to build the software
 ~~~~
 * You'll need to add the compiler bin directory to the system path as CMake needs to find the compiler and other files that were installed. Go to Control Panel->System->Advanced Settings and add `C:\msys64\mingw64\bin` (or equivalent for your install) to the system path variable.
 * `C:\msys64\mingw64\bin` should contain mingw32-make.exe. If it doesnt (possible as was downloaded through Msys) get a copy of mingw32-make.exe from [here](https://www.dropbox.com/s/v4h5npv4vo6u3y2/mingw32-make.exe?dl=0) and put in this directory, or use pacman to download.
-* Open CMake GUI, set the source and build directories to those named above
+* Open *CMake GUI*, set the source and build directories to those named above
 * Click 'configure' and choose to build for "Eclipse CDT4 - MinGW Makefiles"
 * You may get an error message complaining that `sh.exe` is in the path. If this happens, make sure c:\msys64\usr\bin isnt on the system path.
 * Hopefully, CMake will locate the compiler you just installed and the required libraries and configure the project. Possible error messages and solutions:
@@ -45,7 +42,6 @@ Either:
 	* Can't find lots of files and libraries such as headers (XXXX.h), glew, graphene, other librarie. Choose advanced options and make sure that CMake has found the correct MinGW install where all of your dependencies have been installed (probably c:\msys64\mingw64). If it has found another install it will be looking in the wrong place for the libraries and headers. Update CMake variables to point to correct MinGW or remove old versions of MinGW, restart CMake. Clear the cache and re-configure.
 * Click 'generate' to generate an Eclipse project for your system.
 
-(You could also generate Msys2 makefiles using CMake if you prefer to build from the command line, or alternative there are input files for Autotools which can be called from within msys - I'm not sure if these are 100% up to date though so you'd need to check and adjust if necessary)
 
 ## Eclipse and build
 * Download Eclipse IDE for C/C++
