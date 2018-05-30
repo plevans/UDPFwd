@@ -1,10 +1,12 @@
-/*
- * enableDisable.c
+/*		UDP Packet forwarder for internet connected HIL
  *
- *  Created on: 29 May 2018
- *      Author: ezzpe
+ * 		File:				enableDisable.c
+ * 		Author(s): 			29 May 2018
+ * 		Creation Date:		P L Evans
+ *
+ * 		Description:
+ *		Enable/disable GUI components
  */
-
 
 #include <stdio.h>
 #include <stdlib.h>

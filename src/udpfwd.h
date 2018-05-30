@@ -1,6 +1,17 @@
 
 
 #ifndef UDPFWD_H
+/*		UDP Packet forwarder for internet connected HIL
+ *
+ * 		File:				udpfwd.h
+ * 		Author(s): 			16 May 2018
+ * 		Creation Date:		P L Evans
+ *
+ * 		Description:
+ *
+ *
+ */
+
 #define UDPFWD_H
 
 #include "gtk/gtk.h"

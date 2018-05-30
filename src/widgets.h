@@ -1,4 +1,13 @@
-
+/*		UDP Packet forwarder for internet connected HIL
+ *
+ * 		File:				widgets.h
+ * 		Author(s): 			16 May 2018
+ * 		Creation Date:		P L Evans
+ *
+ * 		Description:
+ *		List of GUI widgets
+ *
+ */
 
 #ifndef WIDGETS_H
 #define WIDGETS_H

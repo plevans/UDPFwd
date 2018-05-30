@@ -1,10 +1,13 @@
-/*
- * comms.c
+/*		UDP Packet forwarder for internet connected HIL
  *
- *  Created on: 16 May 2018
- *      Author: ezzpe
+ * 		File:				comms.c
+ * 		Author(s): 			16 May 2018
+ * 		Creation Date:		P L Evans
+ *
+ * 		Description:
+ *		Thread functions to handle receiving sockets
+ *
  */
-
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,3 +1,14 @@
+/*		UDP Packet forwarder for internet connected HIL
+ *
+ * 		File:				main.c
+ * 		Author(s): 			16 May 2018
+ * 		Creation Date:		P L Evans
+ *
+ * 		Description:
+ *		Program initialisation.
+ *
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 

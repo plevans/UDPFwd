@@ -1,3 +1,14 @@
+/*		UDP Packet forwarder for internet connected HIL
+ *
+ * 		File:				outputwindow.c
+ * 		Author(s): 			16 May 2018
+ * 		Creation Date:		P L Evans
+ *
+ * 		Description:
+ *		Display information in text output window
+ *
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <gtk/gtk.h>
