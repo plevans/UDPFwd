@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <time.h>
+
 #include "udpfwd.h"
 
 #include <gtk/gtk.h>
@@ -79,15 +81,10 @@ int UFD_localRecvThread( gpointer data ) {
 
 		//print details of the client/peer and the data received
 		peprintf( PEPSTR_INFO, NULL, "Received packet from %s:%d\n", inet_ntoa(si_other.sin_addr), ntohs(si_other.sin_port) );
-		peprintf( PEPSTR_INFO, NULL, "Data: %s\n" , buf);
 
-		/*
-		//now reply the client with some message?
-		if( sendto(s, buf, recv_len, 0, (struct sockaddr*) &si_other, slen) == SOCKET_ERROR ) {
-			peprintf( PEPSTR_ERROR, NULL, "sendto() failed with error code : %d" , WSAGetLastError());
-			break;
-		}
-		*/
+		UFD_decodeParams( buf, recv_len, ud->sendParams );
+
+		UFD_updateGUIParams( ud );
 	}
 
 	closesocket(s);
@@ -107,5 +104,40 @@ int UFD_remoteRecvThread( gpointer data ) {
 	/* To be implemented but data will be a pointer to a Udp_RemoteConnection structure */
 
 	/* TBD ... */
+}
+
+
+int UFD_emulationThread( gpointer data ) {
+	UdpFwdData *ud = (UdpFwdData*) data;
+	const char *valuestr;
+	char buf[RECV_BUFFER_LENGTH];
+	int buflen;
+	double period;
+	time_t ticks, target;
+
+	while( 1 ) {
+		if( ud->runLocalThread && ud->enableEmulation ) {
+
+			buflen = UFD_encodeBuffer( buf, ud->recvParams, 10 );
+
+			peprintf( PEPSTR_INFO, NULL, "Transmitting bytes 0x%08x\n",  (buf[0])|(buf[1]<<32) );
+
+			if( sendto( ud->localHILSocket, buf, buflen, 0, (struct sockaddr *) &ud->HILSockAddr, ud->HILSockLen ) == SOCKET_ERROR ) {
+				peprintf( PEPSTR_ERROR, NULL, "sendto() failed with error code : %d" , WSAGetLastError() );
+				return 0;
+			}
+
+			ticks = clock();
+
+			valuestr = gtk_entry_get_text( GTK_ENTRY( ud->widgets[WIDGET_EMULATEFREQUENCY]) );
+			period = 1./atof( valuestr );
+
+			target = ticks + period / CLOCKS_PER_SEC;
+
+			while( clock() < target );
+		}
+	}
+
+	return 0;
 }
 

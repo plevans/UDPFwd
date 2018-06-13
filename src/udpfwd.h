@@ -33,6 +33,9 @@
 
 #define RECV_BUFFER_LENGTH 1024
 
+#define MAX_PARAMS				36
+#define MAX_DISPLAY_PARAMS		18
+
 
 typedef struct _UdpRemoteConnection {
 	struct _UdpFwdData *ud;
@@ -53,7 +56,7 @@ typedef struct _UdpFwdData {
 	UdpRemoteConnection remotes[MAX_REMOTES];
 	int nActiveRemotes;
 
-	int runLocalThread, localThreadActive;
+	int runLocalThread, localThreadActive, enableEmulation;
 	char localHILIP[128];
 	char localHILPort[64];
 	char localPort[64];
@@ -62,6 +65,11 @@ typedef struct _UdpFwdData {
 	struct sockaddr_in HILSockAddr;
 	int HILSockLen;
 
+
+	double 	recvParams[MAX_PARAMS];					/**< Parameter values received from remote */
+	double	sendParams[MAX_PARAMS];					/**< Paramster values recieved from HIL for transmitting */
+
+	double emulateFrequency;
 } UdpFwdData;
 
 
@@ -84,5 +92,11 @@ void UFD_enableEmulation( UdpFwdData *ud, gboolean enabled );
 
 /* comms.c */
 int UFD_localRecvThread( gpointer data );
+void UFD_decodeParams( void* buffer, size_t nr_bytes, double *params );
+int UFD_encodeBuffer( void* buffer, double *params, int nparam );
+
+void UFD_updateGUIParams( UdpFwdData *ud );
+
+int UFD_emulationThread( gpointer data );
 
 #endif

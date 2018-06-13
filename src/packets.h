@@ -29,6 +29,23 @@
  *
  */
 
+ struct msghdr {  // should be WSAMSG
+	 void    		*msg_name;       /* Socket name                  */
+	 int             msg_namelen;    /* Length of name               */
+	 struct iovec 	*msg_iov;        /* Data blocks                  */
+	 size_t 		 msg_iovlen;     /* Number of blocks             */
+	 void    		*msg_control;    /* Per protocol magic (eg BSD file descriptor passing) */
+	 size_t 		 msg_controllen; /* Length of cmsg list */
+	 unsigned        msg_flags;
+ };
+
+
+ struct iovec {  // should be WSABUF
+     void *iov_base;
+     size_t iov_len;
+ };
+
+
 
 double UFD_getParamValue( void* buffer, int varid );
 void UFD_setParamValue( void* buffer, int varid, double value );

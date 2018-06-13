@@ -22,11 +22,22 @@
 
 
 int UFD_initGUI( UdpFwdData *ud, GtkBuilder *bld ) {
+	int i;
+
 	UFD_initialiseOutputWindows( ud, bld );
 	UFD_intialiseParameterWidgets( ud, bld );
 	UFD_initialiseRemoteList( ud, bld );
 
 	ud->runLocalThread = 0;
+	ud->enableEmulation = 0;
+
+	for( i = 0; i < 18; i++ ) {
+		ud->recvParams[i] = 0.;
+		ud->sendParams[i] = 0.;
+	}
+
+	ud->emulateFrequency = 0.1;
+
 	return 0;
 }
 
@@ -37,43 +48,43 @@ int UFD_intialiseParameterWidgets( UdpFwdData *ud, GtkBuilder *bld ) {
 			!(ud->widgets[WIDGET_HILIP] = GTK_WIDGET( gtk_builder_get_object (bld, "EntryHILIP") )) ||
 			!(ud->widgets[WIDGET_HILPORT] = GTK_WIDGET( gtk_builder_get_object (bld, "EntryHILPort") )) ||
 
-			!(ud->widgets[WIDGET_PARAMNAME1] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry1") )) ||
-			!(ud->widgets[WIDGET_PARAMNAME2] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry2") )) ||
-			!(ud->widgets[WIDGET_PARAMNAME3] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry3") )) ||
-			!(ud->widgets[WIDGET_PARAMNAME4] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry4") )) ||
-			!(ud->widgets[WIDGET_PARAMNAME5] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry5") )) ||
-			!(ud->widgets[WIDGET_PARAMNAME6] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry6") )) ||
-			!(ud->widgets[WIDGET_PARAMNAME7] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry7") )) ||
-			!(ud->widgets[WIDGET_PARAMNAME8] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry8") )) ||
-			!(ud->widgets[WIDGET_PARAMNAME9] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry9") )) ||
-			!(ud->widgets[WIDGET_PARAMNAME10] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry10") )) ||
-			!(ud->widgets[WIDGET_PARAMNAME11] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry11") )) ||
-			!(ud->widgets[WIDGET_PARAMNAME12] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry12") )) ||
-			!(ud->widgets[WIDGET_PARAMNAME13] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry13") )) ||
-			!(ud->widgets[WIDGET_PARAMNAME14] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry14") )) ||
-			!(ud->widgets[WIDGET_PARAMNAME15] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry15") )) ||
-			!(ud->widgets[WIDGET_PARAMNAME16] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry16") )) ||
-			!(ud->widgets[WIDGET_PARAMNAME17] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry17") )) ||
-			!(ud->widgets[WIDGET_PARAMNAME18] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry18") )) ||
+			!(ud->widgets[WIDGET_RECVVALUE1] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry1") )) ||
+			!(ud->widgets[WIDGET_RECVVALUE2] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry2") )) ||
+			!(ud->widgets[WIDGET_RECVVALUE3] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry3") )) ||
+			!(ud->widgets[WIDGET_RECVVALUE4] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry4") )) ||
+			!(ud->widgets[WIDGET_RECVVALUE5] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry5") )) ||
+			!(ud->widgets[WIDGET_RECVVALUE6] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry6") )) ||
+			!(ud->widgets[WIDGET_RECVVALUE7] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry7") )) ||
+			!(ud->widgets[WIDGET_RECVVALUE8] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry8") )) ||
+			!(ud->widgets[WIDGET_RECVVALUE9] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry9") )) ||
+			!(ud->widgets[WIDGET_RECVVALUE10] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry10") )) ||
+			!(ud->widgets[WIDGET_RECVVALUE11] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry11") )) ||
+			!(ud->widgets[WIDGET_RECVVALUE12] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry12") )) ||
+			!(ud->widgets[WIDGET_RECVVALUE13] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry13") )) ||
+			!(ud->widgets[WIDGET_RECVVALUE14] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry14") )) ||
+			!(ud->widgets[WIDGET_RECVVALUE15] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry15") )) ||
+			!(ud->widgets[WIDGET_RECVVALUE16] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry16") )) ||
+			!(ud->widgets[WIDGET_RECVVALUE17] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry17") )) ||
+			!(ud->widgets[WIDGET_RECVVALUE18] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamNameEntry18") )) ||
 
-			!(ud->widgets[WIDGET_PARAMVALUE1] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry1") )) ||
-			!(ud->widgets[WIDGET_PARAMVALUE2] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry2") )) ||
-			!(ud->widgets[WIDGET_PARAMVALUE3] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry3") )) ||
-			!(ud->widgets[WIDGET_PARAMVALUE4] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry4") )) ||
-			!(ud->widgets[WIDGET_PARAMVALUE5] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry5") )) ||
-			!(ud->widgets[WIDGET_PARAMVALUE6] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry6") )) ||
-			!(ud->widgets[WIDGET_PARAMVALUE7] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry7") )) ||
-			!(ud->widgets[WIDGET_PARAMVALUE8] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry8") )) ||
-			!(ud->widgets[WIDGET_PARAMVALUE9] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry9") )) ||
-			!(ud->widgets[WIDGET_PARAMVALUE10] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry10") )) ||
-			!(ud->widgets[WIDGET_PARAMVALUE11] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry11") )) ||
-			!(ud->widgets[WIDGET_PARAMVALUE12] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry12") )) ||
-			!(ud->widgets[WIDGET_PARAMVALUE13] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry13") )) ||
-			!(ud->widgets[WIDGET_PARAMVALUE14] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry14") )) ||
-			!(ud->widgets[WIDGET_PARAMVALUE15] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry15") )) ||
-			!(ud->widgets[WIDGET_PARAMVALUE16] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry16") )) ||
-			!(ud->widgets[WIDGET_PARAMVALUE17] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry17") )) ||
-			!(ud->widgets[WIDGET_PARAMVALUE18] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry18") )) ||
+			!(ud->widgets[WIDGET_SENDVALUE1] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry1") )) ||
+			!(ud->widgets[WIDGET_SENDVALUE2] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry2") )) ||
+			!(ud->widgets[WIDGET_SENDVALUE3] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry3") )) ||
+			!(ud->widgets[WIDGET_SENDVALUE4] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry4") )) ||
+			!(ud->widgets[WIDGET_SENDVALUE5] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry5") )) ||
+			!(ud->widgets[WIDGET_SENDVALUE6] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry6") )) ||
+			!(ud->widgets[WIDGET_SENDVALUE7] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry7") )) ||
+			!(ud->widgets[WIDGET_SENDVALUE8] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry8") )) ||
+			!(ud->widgets[WIDGET_SENDVALUE9] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry9") )) ||
+			!(ud->widgets[WIDGET_SENDVALUE10] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry10") )) ||
+			!(ud->widgets[WIDGET_SENDVALUE11] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry11") )) ||
+			!(ud->widgets[WIDGET_SENDVALUE12] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry12") )) ||
+			!(ud->widgets[WIDGET_SENDVALUE13] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry13") )) ||
+			!(ud->widgets[WIDGET_SENDVALUE14] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry14") )) ||
+			!(ud->widgets[WIDGET_SENDVALUE15] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry15") )) ||
+			!(ud->widgets[WIDGET_SENDVALUE16] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry16") )) ||
+			!(ud->widgets[WIDGET_SENDVALUE17] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry17") )) ||
+			!(ud->widgets[WIDGET_SENDVALUE18] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamValueEntry18") )) ||
 
 			!(ud->widgets[WIDGET_REMOTELIST] = GTK_WIDGET( gtk_builder_get_object (bld, "RemoteConnectionList") )) ||
 			!(ud->widgets[WIDGET_REMOTESTORE] = GTK_WIDGET( gtk_builder_get_object (bld, "RemoteConnectionStore") )) ||
@@ -178,6 +189,12 @@ int main( int argc, char *argv[] ) {
     gtk_widget_set_sensitive( ud.widgets[WIDGET_MENUREMOTESTOP], FALSE );
 
     peprintf( PEPSTR_HILI, NULL, "complete\n" );
+
+
+    if( !g_thread_new( "EmulationThread",(GThreadFunc) &UFD_emulationThread, &ud ) ) {
+		peprintf( PEPSTR_ERROR, NULL, "Failed to fork local emulation thread\n" );
+		return 0;
+	}
 	
     gtk_main ();
 

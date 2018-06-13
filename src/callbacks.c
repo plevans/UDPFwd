@@ -84,6 +84,7 @@ G_MODULE_EXPORT void UFD_openPort( GtkWidget *button, gpointer userdata ) {
 
 	gtk_widget_set_sensitive( ud->widgets[WIDGET_MENULOCALSTOP], TRUE );
 	gtk_widget_set_sensitive( ud->widgets[WIDGET_MENULOCALSTART], FALSE );
+
 	UFD_enableHILIP( ud, FALSE );
 	UFD_enableBroadcast( ud, TRUE );
 }
@@ -95,6 +96,9 @@ G_MODULE_EXPORT void UFD_closePort( GtkWidget *button, gpointer userdata ) {
 	peprintf( PEPSTR_HILI, NULL, "Attemping to close listening port for local HIL...\n" );
 
 	ud->runLocalThread = 0;
+	ud->enableEmulation = 0;
+
+	gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( ud->widgets[WIDGET_EMULATEREMOTE]), FALSE );
 
 	closesocket( ud->localHILSocket );
 	ud->HILSockLen = 0;
@@ -132,6 +136,19 @@ G_MODULE_EXPORT void UFD_removeRemote( GtkWidget *button, gpointer userdata ) {
 	peprintf( PEPSTR_HILI, NULL, "Remote address removed\n" );
 }
 
+G_MODULE_EXPORT void UFD_emulateToggled( GtkToggleButton *button, gpointer userdata ) {
+	UdpFwdData* ud = (UdpFwdData*) userdata;
+
+	if( gtk_toggle_button_get_active( button ) ) {
+		ud->enableEmulation = 1;
+		UFD_enableEmulation( ud, TRUE );
+	} else {
+		ud->enableEmulation = 0;
+		UFD_enableEmulation( ud, FALSE );
+	}
+
+
+ }
 
 
 G_MODULE_EXPORT void UFD_broadcastMessage( GtkWidget *button, gpointer userdata ) {
@@ -160,5 +177,73 @@ G_MODULE_EXPORT boolean UFD_broadcastKeypress( GtkWidget *widget, GdkEventKey *e
     }
 
     return FALSE;
+}
+
+G_MODULE_EXPORT boolean UFD_emulateParamChanged( GtkWidget *widget, GdkEventKey *event, gpointer userdata) {
+	UdpFwdData* ud = (UdpFwdData*) userdata;
+
+    switch( event->keyval ) {
+    	case GDK_KEY_Return:
+    	{
+    		const char* valuestr;
+
+    		valuestr = gtk_entry_get_text( GTK_ENTRY(ud->widgets[WIDGET_RECVVALUE1]) );
+    		ud->recvParams[0] = atof(valuestr);
+
+    		peprintf( PEPSTR_INFO, NULL, "Param1 changed (%g)\n", ud->recvParams[0] );
+
+    	}
+    	break;
+    }
+
+    return FALSE;
+}
+
+G_MODULE_EXPORT boolean UFD_emulatePeriodChanged( GtkWidget *widget, GdkEventKey *event, gpointer userdata) {
+	UdpFwdData* ud = (UdpFwdData*) userdata;
+
+    switch( event->keyval ) {
+    	case GDK_KEY_Return:
+    	{
+    		const char* valuestr;
+
+    		valuestr = gtk_entry_get_text( GTK_ENTRY(ud->widgets[WIDGET_EMULATEFREQUENCY]) );
+    		ud->emulateFrequency= atof(valuestr);
+
+    		peprintf( PEPSTR_INFO, NULL, "Emulate Frequency changed (%g)\n", ud->emulateFrequency );
+
+    	}
+    	break;
+    }
+
+    return FALSE;
+}
+
+
+
+
+void UFD_updateGUIParams( UdpFwdData *ud ) {
+	int i;
+	char buffer[1024];
+
+
+	sprintf( buffer, "%g", ud->sendParams[0] );
+	gtk_entry_set_text( GTK_ENTRY( ud->widgets[WIDGET_SENDVALUE1]), buffer );
+
+	sprintf( buffer, "%g", ud->sendParams[1] );
+	gtk_entry_set_text( GTK_ENTRY( ud->widgets[WIDGET_SENDVALUE2]), buffer );
+
+	sprintf( buffer, "%g", ud->sendParams[2] );
+	gtk_entry_set_text( GTK_ENTRY( ud->widgets[WIDGET_SENDVALUE3]), buffer );
+
+	sprintf( buffer, "%g", ud->sendParams[3] );
+	gtk_entry_set_text( GTK_ENTRY( ud->widgets[WIDGET_SENDVALUE4]), buffer );
+
+	sprintf( buffer, "%g", ud->sendParams[4] );
+	gtk_entry_set_text( GTK_ENTRY( ud->widgets[WIDGET_SENDVALUE5]), buffer );
+
+	sprintf( buffer, "%g", ud->sendParams[5] );
+	gtk_entry_set_text( GTK_ENTRY( ud->widgets[WIDGET_SENDVALUE6]), buffer );
+
 }
 
