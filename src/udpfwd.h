@@ -16,6 +16,8 @@
 
 #include "gtk/gtk.h"
 
+#include "packets.h"
+
 #if defined(WIN32) || defined (WIN64)
 	#include <windows.h>
 	#include <shlobj.h>

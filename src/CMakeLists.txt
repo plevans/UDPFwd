@@ -8,6 +8,7 @@ set( PROJECT_SRCS
 	comms.c
 	remotelist.c
 	enableDisable.c
+	packets.c
 )
 
 set ( PROJECT_HEADERS 
