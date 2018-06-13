@@ -38,15 +38,24 @@ void UFD_enableModelParams( UdpFwdData *ud, gboolean enabled ) {
 	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE7], enabled );
 	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE8], enabled );
 	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE9], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE10], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE11], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE12], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE13], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE14], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE15], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE16], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE17], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE18], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVNAME1], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVNAME2], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVNAME3], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVNAME4], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVNAME5], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVNAME6], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVNAME7], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVNAME8], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVNAME9], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVTS1], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVTS2], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVTS3], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVTS4], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVTS5], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVTS6], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVTS7], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVTS8], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVTS9], enabled );
 
 	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDVALUE1], enabled );
 	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDVALUE2], enabled );
@@ -57,22 +66,49 @@ void UFD_enableModelParams( UdpFwdData *ud, gboolean enabled ) {
 	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDVALUE7], enabled );
 	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDVALUE8], enabled );
 	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDVALUE9], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDVALUE10], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDVALUE11], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDVALUE12], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDVALUE13], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDVALUE14], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDVALUE15], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDVALUE16], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDVALUE17], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDVALUE18], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDNAME1], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDNAME2], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDNAME3], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDNAME4], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDNAME5], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDNAME6], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDNAME7], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDNAME8], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDNAME9], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDTS1], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDTS2], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDTS3], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDTS4], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDTS5], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDTS6], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDTS7], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDTS8], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_SENDTS9], enabled );
 }
 
 
 void UFD_enableBroadcast( UdpFwdData *ud, gboolean enabled ) {
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_BROADCASTVALUE1], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_BROADCASTVALUE2], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_BROADCASTVALUE3], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_BROADCASTVALUE4], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_BROADCASTVALUE5], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_BROADCASTVALUE6], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_BROADCASTVALUE7], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_BROADCASTVALUE8], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_BROADCASTVALUE9], enabled );
+
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_BROADCASTID1], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_BROADCASTID2], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_BROADCASTID3], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_BROADCASTID4], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_BROADCASTID5], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_BROADCASTID6], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_BROADCASTID7], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_BROADCASTID8], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_BROADCASTID9], enabled );
+
 	gtk_widget_set_sensitive( ud->widgets[WIDGET_BROADCASTBUTTON], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_BROADCASTMESSAGE], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_EMULATEREMOTE], enabled );
 }
 
 
@@ -82,26 +118,3 @@ void UFD_enableHILIP( UdpFwdData *ud, gboolean enabled ) {
 	gtk_widget_set_sensitive( ud->widgets[WIDGET_HILIP], enabled );
 }
 
-void UFD_enableEmulation( UdpFwdData *ud, gboolean enabled ) {
-
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_EMULATEFREQUENCY], enabled );
-
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE1], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE2], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE3], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE4], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE5], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE6], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE7], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE8], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE9], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE10], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE11], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE12], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE13], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE14], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE15], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE16], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE17], enabled );
-	gtk_widget_set_sensitive( ud->widgets[WIDGET_RECVVALUE18], enabled );
-}

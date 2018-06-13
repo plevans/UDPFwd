@@ -14,6 +14,8 @@
 
 #define UDPFWD_H
 
+#include <stdint.h>
+
 #include "gtk/gtk.h"
 
 #include "packets.h"
@@ -46,6 +48,19 @@ typedef struct _UdpRemoteConnection {
 } UdpRemoteConnection;
 
 
+typedef struct _UdpParameter {
+	uint64_t		timestamp;
+	uint64_t 		ID;
+	double 			value;
+} UdpParameter;
+
+
+typedef struct _UdpParameterList {
+	UdpParameter *params;
+	int nparams;
+} UdpParameterList;
+
+
 typedef struct _UdpFwdData {
 	GtkWidget *widgets[WIDGET_NUMBER];		/**< Pointers to GUI elements */
 	
@@ -66,8 +81,9 @@ typedef struct _UdpFwdData {
 	int HILSockLen;
 
 
-	double 	recvParams[MAX_PARAMS];					/**< Parameter values received from remote */
-	double	sendParams[MAX_PARAMS];					/**< Paramster values recieved from HIL for transmitting */
+	UdpParameter 	recvParams[9];					/**< Most recent parameter values received from remote (for display in GUI / retransmitting)*/
+	UdpParameter	sendParams[9];					/**< Most recent paramter values recieved from HIL (for display in GUI / retransmitting)*/
+	int nrecvParams, nsendParams;
 
 	double emulateFrequency;
 } UdpFwdData;
@@ -82,21 +98,23 @@ int UFD_initialiseRemoteList( UdpFwdData *ud, GtkBuilder *bld );
 static gboolean UFD_updateOutputText_thread( gpointer userdata );
 void UFD_updateOutput( const char* msg, void* data, unsigned int type ) ;
 int UFD_initialiseOutputWindows( UdpFwdData *ud, GtkBuilder *bld );
+gboolean UFD_updateGUISendParams_thread( gpointer userdata );
 
 /* enableDisable.c */
 void UFD_enableRemoteList( UdpFwdData *ud, gboolean enabled ) ;
 void UFD_enableModelParams( UdpFwdData *ud, gboolean enabled );
 void UFD_enableBroadcast( UdpFwdData *ud, gboolean enabled );
 void UFD_enableHILIP( UdpFwdData *ud, gboolean enabled );
-void UFD_enableEmulation( UdpFwdData *ud, gboolean enabled );
 
 /* comms.c */
 int UFD_localRecvThread( gpointer data );
-void UFD_decodeParams( void* buffer, size_t nr_bytes, double *params );
-int UFD_encodeBuffer( void* buffer, double *params, int nparam );
-
-void UFD_updateGUIParams( UdpFwdData *ud );
-
 int UFD_emulationThread( gpointer data );
+
+/* packets.c */
+int UFD_decodeParams( void* buffer, size_t nr_bytes, UdpParameter *params, int maxParams );
+int UFD_encodeBuffer( void* buffer, UdpParameter *params, int nparam, uint64_t timestamp );
+
+/* callbacks.c */
+void UFD_updateGUISendParams( UdpFwdData *ud, UdpParameter *params, int nparams );
 
 #endif

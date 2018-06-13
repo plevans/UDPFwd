@@ -45,13 +45,13 @@ G_MODULE_EXPORT void UFD_openPort( GtkWidget *button, gpointer userdata ) {
 
 	strncpy( ud->localPort, text, 63 );
 
-	port = atof( ud->localPort );
-	if( port < 0 || port > 65536 ) {
+	port = atoi( ud->localPort );
+	if( strlen(ud->localPort) <= 0 ) {
 		peprintf( PEPSTR_ERROR, NULL, "Invalid Local Port\n" );
 		return;
 	}
-	port = atof( ud->localHILPort );
-	if( port < 0 || port > 65536 ) {
+	port = atoi( ud->localHILPort );
+	if( strlen(ud->localHILPort) <= 0 ) {
 		peprintf( PEPSTR_ERROR, NULL, "Invalid HIL Port\n" );
 		return;
 	}
@@ -98,8 +98,6 @@ G_MODULE_EXPORT void UFD_closePort( GtkWidget *button, gpointer userdata ) {
 	ud->runLocalThread = 0;
 	ud->enableEmulation = 0;
 
-	gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( ud->widgets[WIDGET_EMULATEREMOTE]), FALSE );
-
 	closesocket( ud->localHILSocket );
 	ud->HILSockLen = 0;
 
@@ -136,114 +134,131 @@ G_MODULE_EXPORT void UFD_removeRemote( GtkWidget *button, gpointer userdata ) {
 	peprintf( PEPSTR_HILI, NULL, "Remote address removed\n" );
 }
 
-G_MODULE_EXPORT void UFD_emulateToggled( GtkToggleButton *button, gpointer userdata ) {
-	UdpFwdData* ud = (UdpFwdData*) userdata;
-
-	if( gtk_toggle_button_get_active( button ) ) {
-		ud->enableEmulation = 1;
-		UFD_enableEmulation( ud, TRUE );
-	} else {
-		ud->enableEmulation = 0;
-		UFD_enableEmulation( ud, FALSE );
-	}
-
-
- }
-
 
 G_MODULE_EXPORT void UFD_broadcastMessage( GtkWidget *button, gpointer userdata ) {
 	UdpFwdData* ud = (UdpFwdData*) userdata;
 	char *msg;
+	int id;
+	double value;
+	const char *str;
+	uint64_t timestamp;
 
-	if( (msg = gtk_entry_get_text( GTK_ENTRY( ud->widgets[WIDGET_BROADCASTMESSAGE] ) )) ) {
-		peprintf( PEPSTR_INFO, NULL, "Sending packet to local HIL %s:%d\n", inet_ntoa(ud->HILSockAddr.sin_addr), ntohs(ud->HILSockAddr.sin_port) );
-		peprintf( PEPSTR_INFO, NULL, "Data: %s\n", msg );
-		if( sendto( ud->localHILSocket, msg, strlen(msg), 0, (struct sockaddr *) &ud->HILSockAddr, ud->HILSockLen ) == SOCKET_ERROR ) {
+	UdpParameter params[9];
+	int nparam = 0;
+
+	char buf[RECV_BUFFER_LENGTH];
+	int buflen;
+
+	str = gtk_entry_get_text( GTK_ENTRY(ud->widgets[WIDGET_BROADCASTTS]) );
+	timestamp = atoi(str);
+
+	str = gtk_entry_get_text( GTK_ENTRY(ud->widgets[WIDGET_BROADCASTID1]) );
+	id = atoi(str);
+	if( id >= 0 ) {
+		str = gtk_entry_get_text( GTK_ENTRY(ud->widgets[WIDGET_BROADCASTVALUE1]) );
+		value = atof(str);
+		params[nparam].ID = id;
+		params[nparam].value = value;
+		params[nparam++].timestamp = timestamp;
+	}
+
+	str = gtk_entry_get_text( GTK_ENTRY(ud->widgets[WIDGET_BROADCASTID2]) );
+	id = atoi(str);
+	if( id >= 0 ) {
+		str = gtk_entry_get_text( GTK_ENTRY(ud->widgets[WIDGET_BROADCASTVALUE2]) );
+		value = atof(str);
+		params[nparam].ID = id;
+		params[nparam].value = value;
+		params[nparam++].timestamp = timestamp;
+	}
+
+	str = gtk_entry_get_text( GTK_ENTRY(ud->widgets[WIDGET_BROADCASTID3]) );
+	id = atoi(str);
+	if( id >= 0 ) {
+		str = gtk_entry_get_text( GTK_ENTRY(ud->widgets[WIDGET_BROADCASTVALUE3]) );
+		value = atof(str);
+		params[nparam].ID = id;
+		params[nparam].value = value;
+		params[nparam++].timestamp = timestamp;
+	}
+
+	str = gtk_entry_get_text( GTK_ENTRY(ud->widgets[WIDGET_BROADCASTID4]) );
+	id = atoi(str);
+	if( id >= 0 ) {
+		str = gtk_entry_get_text( GTK_ENTRY(ud->widgets[WIDGET_BROADCASTVALUE4]) );
+		value = atof(str);
+		params[nparam].ID = id;
+		params[nparam].value = value;
+		params[nparam++].timestamp = timestamp;
+	}
+
+	str = gtk_entry_get_text( GTK_ENTRY(ud->widgets[WIDGET_BROADCASTID5]) );
+	id = atoi(str);
+	if( id >= 0 ) {
+		str = gtk_entry_get_text( GTK_ENTRY(ud->widgets[WIDGET_BROADCASTVALUE5]) );
+		value = atof(str);
+		params[nparam].ID = id;
+		params[nparam].value = value;
+		params[nparam++].timestamp = timestamp;
+	}
+
+	str = gtk_entry_get_text( GTK_ENTRY(ud->widgets[WIDGET_BROADCASTID6]) );
+	id = atoi(str);
+	if( id >= 0 ) {
+		str = gtk_entry_get_text( GTK_ENTRY(ud->widgets[WIDGET_BROADCASTVALUE6]) );
+		value = atof(str);
+		params[nparam].ID = id;
+		params[nparam].value = value;
+		params[nparam++].timestamp = timestamp;
+	}
+
+	str = gtk_entry_get_text( GTK_ENTRY(ud->widgets[WIDGET_BROADCASTID7]) );
+	id = atoi(str);
+	if( id >= 0 ) {
+		str = gtk_entry_get_text( GTK_ENTRY(ud->widgets[WIDGET_BROADCASTVALUE7]) );
+		value = atof(str);
+		params[nparam].ID = id;
+		params[nparam].value = value;
+		params[nparam++].timestamp = timestamp;
+	}
+
+	str = gtk_entry_get_text( GTK_ENTRY(ud->widgets[WIDGET_BROADCASTID8]) );
+	id = atoi(str);
+	if( id >= 0 ) {
+		str = gtk_entry_get_text( GTK_ENTRY(ud->widgets[WIDGET_BROADCASTVALUE8]) );
+		value = atof(str);
+		params[nparam].ID = id;
+		params[nparam].value = value;
+		params[nparam++].timestamp = timestamp;
+	}
+
+	str = gtk_entry_get_text( GTK_ENTRY(ud->widgets[WIDGET_BROADCASTID9]) );
+	id = atoi(str);
+	if( id >= 0 ) {
+		str = gtk_entry_get_text( GTK_ENTRY(ud->widgets[WIDGET_BROADCASTVALUE9]) );
+		value = atof(str);
+		params[nparam].ID = id;
+		params[nparam].value = value;
+		params[nparam++].timestamp = timestamp;
+	}
+
+	if( nparam > 0 ) {
+		buflen = UFD_encodeBuffer( buf, params, nparam, timestamp );
+
+		peprintf( PEPSTR_INFO, NULL, "Transmitting %d bytes\n", buflen );
+
+		/* TODO: Broadcast to remote HIL ports using defined VCHV message format */
+		if( sendto( ud->localHILSocket, buf, buflen, 0, (struct sockaddr *) &ud->HILSockAddr, ud->HILSockLen ) == SOCKET_ERROR ) {
 			peprintf( PEPSTR_ERROR, NULL, "sendto() failed with error code : %d" , WSAGetLastError() );
 			return;
 		}
-		gtk_entry_set_text( GTK_ENTRY( ud->widgets[WIDGET_BROADCASTMESSAGE] ), "" );
+
+		peprintf( PEPSTR_INFO, NULL, "Packet sent: %d variables, %d bytes\n", nparam, buflen );
+	} else {
+		peprintf( PEPSTR_INFO, NULL, "Packet not sent, no parameters specified\n" );
 	}
 }
 
 
-G_MODULE_EXPORT boolean UFD_broadcastKeypress( GtkWidget *widget, GdkEventKey *event, gpointer userdata) {
-	UdpFwdData* ud = (UdpFwdData*) userdata;
 
-    switch( event->keyval ) {
-    	case GDK_KEY_Return:
-    		UFD_broadcastMessage( NULL, userdata );
-    	break;
-    }
-
-    return FALSE;
-}
-
-G_MODULE_EXPORT boolean UFD_emulateParamChanged( GtkWidget *widget, GdkEventKey *event, gpointer userdata) {
-	UdpFwdData* ud = (UdpFwdData*) userdata;
-
-    switch( event->keyval ) {
-    	case GDK_KEY_Return:
-    	{
-    		const char* valuestr;
-
-    		valuestr = gtk_entry_get_text( GTK_ENTRY(ud->widgets[WIDGET_RECVVALUE1]) );
-    		ud->recvParams[0] = atof(valuestr);
-
-    		peprintf( PEPSTR_INFO, NULL, "Param1 changed (%g)\n", ud->recvParams[0] );
-
-    	}
-    	break;
-    }
-
-    return FALSE;
-}
-
-G_MODULE_EXPORT boolean UFD_emulatePeriodChanged( GtkWidget *widget, GdkEventKey *event, gpointer userdata) {
-	UdpFwdData* ud = (UdpFwdData*) userdata;
-
-    switch( event->keyval ) {
-    	case GDK_KEY_Return:
-    	{
-    		const char* valuestr;
-
-    		valuestr = gtk_entry_get_text( GTK_ENTRY(ud->widgets[WIDGET_EMULATEFREQUENCY]) );
-    		ud->emulateFrequency= atof(valuestr);
-
-    		peprintf( PEPSTR_INFO, NULL, "Emulate Frequency changed (%g)\n", ud->emulateFrequency );
-
-    	}
-    	break;
-    }
-
-    return FALSE;
-}
-
-
-
-
-void UFD_updateGUIParams( UdpFwdData *ud ) {
-	int i;
-	char buffer[1024];
-
-
-	sprintf( buffer, "%g", ud->sendParams[0] );
-	gtk_entry_set_text( GTK_ENTRY( ud->widgets[WIDGET_SENDVALUE1]), buffer );
-
-	sprintf( buffer, "%g", ud->sendParams[1] );
-	gtk_entry_set_text( GTK_ENTRY( ud->widgets[WIDGET_SENDVALUE2]), buffer );
-
-	sprintf( buffer, "%g", ud->sendParams[2] );
-	gtk_entry_set_text( GTK_ENTRY( ud->widgets[WIDGET_SENDVALUE3]), buffer );
-
-	sprintf( buffer, "%g", ud->sendParams[3] );
-	gtk_entry_set_text( GTK_ENTRY( ud->widgets[WIDGET_SENDVALUE4]), buffer );
-
-	sprintf( buffer, "%g", ud->sendParams[4] );
-	gtk_entry_set_text( GTK_ENTRY( ud->widgets[WIDGET_SENDVALUE5]), buffer );
-
-	sprintf( buffer, "%g", ud->sendParams[5] );
-	gtk_entry_set_text( GTK_ENTRY( ud->widgets[WIDGET_SENDVALUE6]), buffer );
-
-}
 

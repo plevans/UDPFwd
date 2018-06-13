@@ -131,6 +131,7 @@ include_directories( "src/" )
 		
 find_lib( "GTK3" "${gtk_libnames}" "${gtk_incnames}" "${gtk_pathsuffixes}" )
 
+add_subdirectory( "src/dummyHIL" )
 add_subdirectory( "src/peprintf" )
 add_subdirectory( "src/" )
 

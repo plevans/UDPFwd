@@ -14,45 +14,13 @@
 
 #include "udpfwd.h"
 
-
 #include "peprintf.h"
-
-typedef union _duint32 {
-	double d;
-	uint32_t u1;
-	uint32_t u2;
-} duint32;
-
-
-double UFD_getParamValue( void* buffer, int varid ) {
-	uint32_t* buf = (uint32_t*) buffer;
-	double value;
-
-	if( sizeof(double) != sizeof(uint32_t) ) {
-		peprintf( PEPSTR_WARN, NULL, "Possible variable size problem, sizeof(double) = %d, sizeof(uint32_t) = %d\n", sizeof(double), sizeof(uint32_t) );
-	}
-
-	memcpy( &value, buf+varid, sizeof(double) );
-
-	return value;
-}
-
-void UFD_setParamValue( void* buffer, int varid, double value ) {
-	uint32_t* buf = (uint32_t*) buffer;
-
-	if( sizeof(double) != sizeof(uint32_t) ) {
-		peprintf( PEPSTR_WARN, NULL, "Possible variable size problem, sizeof(double) = %d, sizeof(uint32_t) = %d\n", sizeof(double), sizeof(uint32_t) );
-	}
-
-	memcpy( buf+varid, &value, sizeof(double) );
-}
 
 
 void UFD_printBuffer( void* buffer, size_t nr_bytes ) {
 	uint32_t* buf = (uint32_t*) buffer;
 	int i;
 	int nvar = nr_bytes / sizeof(double);
-	duint32 du;
 	double d;
 	uint32_t *u1, *u2;
 
@@ -62,13 +30,11 @@ void UFD_printBuffer( void* buffer, size_t nr_bytes ) {
 	peprintf( PEPSTR_INFO, NULL, "%d bytes, %d variables (sizeof(uint32_t) = %d)\n", nr_bytes, nvar, sizeof(uint32_t) );
 
 	for( i = 0; i < nvar; i++ ) {
-		du.u1 = buf[i*2];
-		du.u2 = buf[i*2+1];
 
 		*u1 = buf[i*2];
 		*u2 = buf[i*2+1];
 
-		peprintf( PEPSTR_INFO, NULL, "0x%08x (%f, %f)\t", (du.u2)|(du.u1<<32), du.d, d );
+		peprintf( PEPSTR_INFO, NULL, "0x%08x (%f)\t", (uint64_t) (*u2)|(*u1<<32), d );
 	}
 
 	peprintf( PEPSTR_INFO, NULL, "\n" );
@@ -76,41 +42,61 @@ void UFD_printBuffer( void* buffer, size_t nr_bytes ) {
 }
 
 
-void UFD_decodeParams( void* buffer, size_t nr_bytes, double *params ) {
+int UFD_decodeParams( void* buffer, size_t nr_bytes, UdpParameter *params, int maxParams ) {
 	uint32_t* buf = (uint32_t*) buffer;
 	int i;
 	int nvar = nr_bytes / sizeof(double);
 	double d;
 	uint32_t *u1, *u2;
+	uint64_t timestamp;
 
+	u1 = &timestamp;
+	u2 = u1+1;
+
+	/* First parameter in list assumed to be timestamp (integer)
+	 * All parameters in packet are assumed to have same time-stamp
+	 * */
+	*u1 = buf[0];
+	*u2 = buf[1];
+
+
+	/* Now read remaining double precision values */
 	u1 = &d;
 	u2 = u1+1;
 
-	for( i = 0; i < nvar && i < MAX_PARAMS; i++ ) {
+	for( i = 1; i < nvar && i < maxParams; i++ ) {
 		*u1 = buf[i*2];
 		*u2 = buf[i*2+1];
 
-		params[i] = d;
+		params[i-1].ID = i-1;				// just assuming first parameter in packet has ID 0, 2nd ID 1, etc - really the IDs should be encoded in the packet
+		params[i-1].value = d;
+		params[i-1].timestamp = timestamp;
 	}
 
+	return i-1;
 }
 
-
-int UFD_encodeBuffer( void* buffer, double *params, int nparam ) {
+int UFD_encodeBuffer( void* buffer, UdpParameter *params, int nparam, uint64_t timestamp ) {
 	uint32_t* buf = (uint32_t*) buffer;
 	int i;
 	double d;
 	uint32_t *u1, *u2;
 
+	/* Add time-stamp as first parameter */
+	u1 = &timestamp;
+	u2 = u1+1;
+	buf[0] = *u1;
+	buf[1] = *u2;
+
 	u1 = &d;
 	u2 = u1+1;
 
-	for( i = 0; i < MAX_PARAMS && i < nparam; i++ ) {
-		d = params[i];
+	for( i = 1; i < nparam+1; i++ ) {
+		d = params[i-1].value;
 
 		buf[i*2] = *u1;
 		buf[i*2+1] = *u2;
 	}
 
-	return 8*nparam;
+	return 8*(nparam+1);
 }

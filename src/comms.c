@@ -34,6 +34,9 @@ int UFD_localRecvThread( gpointer data ) {
 	WSADATA wsa;
 	struct timeval tv;
 	int portShort;
+	UdpParameter recvd[128];		/* List of parameters received in packet */
+	int nparamRecvd;
+	UdpParameterList* pl;
 
 	ud->localThreadActive = 1;
 
@@ -51,7 +54,7 @@ int UFD_localRecvThread( gpointer data ) {
 
 	tv.tv_sec = 0;
 	tv.tv_usec = 100000;
-	if (setsockopt( s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0 ) {
+	if( setsockopt( s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0 ) {
 		peprintf( PEPSTR_ERROR, NULL, "failed to set socket timeout with error code : %d" , WSAGetLastError() );
 		return 0;
 	}
@@ -62,7 +65,7 @@ int UFD_localRecvThread( gpointer data ) {
 	server.sin_port = htons( portShort );
 
 	//Bind
-	if( bind(s ,(struct sockaddr *)&server , sizeof(server)) == SOCKET_ERROR) {
+	if( bind( s, (struct sockaddr*)&server , sizeof(server) ) == SOCKET_ERROR) {
 		peprintf( PEPSTR_ERROR, NULL, "Bind failed with error code : %d" , WSAGetLastError() );
 		return 0;
 	}
@@ -74,17 +77,27 @@ int UFD_localRecvThread( gpointer data ) {
 		memset( buf,'\0', RECV_BUFFER_LENGTH );
 
 		//try to receive some data, this is a blocking call
-		if( (recv_len = recvfrom(s, buf, RECV_BUFFER_LENGTH, 0, (struct sockaddr *) &si_other, &slen)) == SOCKET_ERROR ) {
+		if( (recv_len = recvfrom(s, buf, RECV_BUFFER_LENGTH, 0, (struct sockaddr*) &si_other, &slen)) == SOCKET_ERROR ) {
 			peprintf( PEPSTR_ERROR, NULL, "recvfrom() failed with error code : %d" , WSAGetLastError());
 			break;
 		}
 
 		//print details of the client/peer and the data received
-		peprintf( PEPSTR_INFO, NULL, "Received packet from %s:%d\n", inet_ntoa(si_other.sin_addr), ntohs(si_other.sin_port) );
+		//peprintf( PEPSTR_INFO, NULL, "Received packet from Local HIL RTT (%s:%d), %d bytes\n", inet_ntoa(si_other.sin_addr), ntohs(si_other.sin_port), recv_len );
 
-		UFD_decodeParams( buf, recv_len, ud->sendParams );
+		// decode received packed into (ID, Value) pairs
+		nparamRecvd = UFD_decodeParams( buf, recv_len, recvd, 128 );
 
-		UFD_updateGUIParams( ud );
+		// TODO: Broadcast received parameters to remote HILs
+
+		// Update lists used in GUI for diplaying recently received parameters
+		pl = malloc( sizeof( UdpParameterList) );
+
+		if( pl ) {
+			pl->params = recvd;
+			pl->nparams = nparamRecvd;
+			gdk_threads_add_idle( UFD_updateGUISendParams_thread, pl );
+		}
 	}
 
 	closesocket(s);
@@ -118,9 +131,9 @@ int UFD_emulationThread( gpointer data ) {
 	while( 1 ) {
 		if( ud->runLocalThread && ud->enableEmulation ) {
 
-			buflen = UFD_encodeBuffer( buf, ud->recvParams, 10 );
+			buflen = UFD_encodeBuffer( buf, ud->recvParams, 9, ud->recvParams[0].timestamp );
 
-			peprintf( PEPSTR_INFO, NULL, "Transmitting bytes 0x%08x\n",  (buf[0])|(buf[1]<<32) );
+			peprintf( PEPSTR_INFO, NULL, "Transmitting %d bytes\n", buflen );
 
 			if( sendto( ud->localHILSocket, buf, buflen, 0, (struct sockaddr *) &ud->HILSockAddr, ud->HILSockLen ) == SOCKET_ERROR ) {
 				peprintf( PEPSTR_ERROR, NULL, "sendto() failed with error code : %d" , WSAGetLastError() );
@@ -129,10 +142,9 @@ int UFD_emulationThread( gpointer data ) {
 
 			ticks = clock();
 
-			valuestr = gtk_entry_get_text( GTK_ENTRY( ud->widgets[WIDGET_EMULATEFREQUENCY]) );
-			period = 1./atof( valuestr );
+			period = 1./ud->emulateFrequency;
 
-			target = ticks + period / CLOCKS_PER_SEC;
+			target = ticks + (int) (period * CLOCKS_PER_SEC);
 
 			while( clock() < target );
 		}

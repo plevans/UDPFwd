@@ -30,6 +30,97 @@ typedef struct _outputTextUpdate {
 
 
 
+void UFD_updateGUISendParams( UdpFwdData *ud, UdpParameter *params, int nparams ) {
+	int i;
+	char buffer[1024];
+
+	/* insert new paramaters at beginning of list */
+	for( i = nparams; i < 9; i++ ) {
+		ud->sendParams[i] = ud->sendParams[i-nparams];
+	}
+
+	for( i = 0; i < nparams; i++ ) {
+		ud->sendParams[i] = params[i];
+	}
+
+
+	sprintf( buffer, "%d", ud->sendParams[0].timestamp );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_SENDTS1]), buffer );
+	sprintf( buffer, "%d", ud->sendParams[0].ID );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_SENDNAME1]), buffer );
+	sprintf( buffer, "%g", ud->sendParams[0].value );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_SENDVALUE1]), buffer );
+
+	sprintf( buffer, "%d", ud->sendParams[1].timestamp );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_SENDTS2]), buffer );
+	sprintf( buffer, "%d", ud->sendParams[1].ID );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_SENDNAME2]), buffer );
+	sprintf( buffer, "%g", ud->sendParams[1].value );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_SENDVALUE2]), buffer );
+
+	sprintf( buffer, "%d", ud->sendParams[2].timestamp );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_SENDTS3]), buffer );
+	sprintf( buffer, "%d", ud->sendParams[2].ID );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_SENDNAME3]), buffer );
+	sprintf( buffer, "%g", ud->sendParams[2].value );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_SENDVALUE3]), buffer );
+
+	sprintf( buffer, "%d", ud->sendParams[3].timestamp );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_SENDTS4]), buffer );
+	sprintf( buffer, "%d", ud->sendParams[3].ID );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_SENDNAME4]), buffer );
+	sprintf( buffer, "%g", ud->sendParams[3].value );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_SENDVALUE4]), buffer );
+
+	sprintf( buffer, "%d", ud->sendParams[4].timestamp );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_SENDTS5]), buffer );
+	sprintf( buffer, "%d", ud->sendParams[4].ID );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_SENDNAME5]), buffer );
+	sprintf( buffer, "%g", ud->sendParams[4].value );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_SENDVALUE5]), buffer );
+
+	sprintf( buffer, "%d", ud->sendParams[5].timestamp );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_SENDTS6]), buffer );
+	sprintf( buffer, "%d", ud->sendParams[5].ID );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_SENDNAME6]), buffer );
+	sprintf( buffer, "%g", ud->sendParams[5].value );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_SENDVALUE6]), buffer );
+
+	sprintf( buffer, "%d", ud->sendParams[6].timestamp );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_SENDTS7]), buffer );
+	sprintf( buffer, "%d", ud->sendParams[6].ID );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_SENDNAME7]), buffer );
+	sprintf( buffer, "%g", ud->sendParams[6].value );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_SENDVALUE7]), buffer );
+
+	sprintf( buffer, "%d", ud->sendParams[7].timestamp );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_SENDTS8]), buffer );
+	sprintf( buffer, "%d", ud->sendParams[7].ID );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_SENDNAME8]), buffer );
+	sprintf( buffer, "%g", ud->sendParams[7].value );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_SENDVALUE8]), buffer );
+
+	sprintf( buffer, "%d", ud->sendParams[8].timestamp );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_SENDTS9]), buffer );
+	sprintf( buffer, "%d", ud->sendParams[8].ID );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_SENDNAME9]), buffer );
+	sprintf( buffer, "%g", ud->sendParams[8].value );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_SENDVALUE9]), buffer );
+
+}
+
+gboolean UFD_updateGUISendParams_thread( gpointer userdata ) {
+	UdpParameterList* pl = (UdpParameterList*) userdata;
+
+	if( !udptr ) return G_SOURCE_REMOVE;
+
+	UFD_updateGUISendParams( udptr, pl->params, pl->nparams );
+
+	free( pl );
+
+	return G_SOURCE_REMOVE;
+}
+
 
 /* Updates display: triggered by thread but executed by main() */
 static gboolean UFD_updateOutputText_thread( gpointer userdata ) {
