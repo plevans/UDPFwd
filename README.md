@@ -49,5 +49,26 @@ No MSys packages exist for the remaining packages but there are links archives c
 * Import the project you just created in the 'eclipse_build' directory (File->Import->General->Existing Projects into Workspace)
 * Build the project (Project->Build All)
 * Run the program (you may need to find UDPFwdGUI.exe in the list of executables generated and explicity run this target the first time)
+
+# Packet Formats
+The packet formats as they are currently used are given below. These can be adapted easily as needed.
+## Triphase System
+|Timestamp[64bits]|Parametervalue1[64bits]|Parametervalue2[64bits]|Parametervalue3[64bits]|Parametervalue4[64bits]|...
+
+* The first 64bits represent a `uint64_t` which represents a time-stamp indicating the simulation time when the parameter/signal values encoded in the packet are valid.
+* Each subsequent 64 bits are a double precision float representing a parameter/signal value. The first parameter/signal value maps to the first input/output on the real-time comms block in the Simulink model.
+* All numbers are encoded in standard Intel x86/x86_64 format, i.e. Little Endian.
+
+## Internet Comms
+|Timestamp[64bits]|ParameterID1[8bits]|Parametervalue1[64bits]|ParameterID2[8bits]|Parametervalue2[64bits]|ParameterID3[8bits]|Parametervalue3[64bits]|ParameterID4[8bits]|Parametervalue4[64bits]|...
+
+* The first 64bits are a `uint64_t` which represents a time-stamp indicating the simulation time when the parameter/signal values encoded in the packet are valid.
+* Each subsequent variable pairs represent a single parameter/signal:
+	* The first 8 bits are a `uint8_t` representing the parameter/signal ID (0-255). Each parameter/signal must have a unique ID that is used consistently across the distributed system.
+	* The next 64 bits are double precision float representing the parameter/signal's value
+* All numbers are encoded in standard Intel x86/x86_64 format, i.e. Little Endian.
+
+## Translation
+At present the Triphase system identifies individual parameter/signals values by their order in the recieved packets whereas the internet packets encode each parameter/signal is encoded with an ID. A mapping between these is needed or the Triphase rx/tx applications on the real time target need modifying the recognise the internet comms style packets (not a big issue to make this change).
 	
 

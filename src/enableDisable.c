@@ -25,6 +25,8 @@ void UFD_enableRemoteList( UdpFwdData *ud, gboolean enabled ) {
 	gtk_widget_set_sensitive( ud->widgets[WIDGET_REMOTESTORE], enabled );
 	gtk_widget_set_sensitive( ud->widgets[WIDGET_ADDREMOTE], enabled );
 	gtk_widget_set_sensitive( ud->widgets[WIDGET_REMOVEREMOTE], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_REMOTEIP], enabled );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_REMOTEPORT], enabled );
 }
 
 
@@ -88,6 +90,8 @@ void UFD_enableModelParams( UdpFwdData *ud, gboolean enabled ) {
 
 
 void UFD_enableBroadcast( UdpFwdData *ud, gboolean enabled ) {
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_BROADCASTTS], enabled );
+
 	gtk_widget_set_sensitive( ud->widgets[WIDGET_BROADCASTVALUE1], enabled );
 	gtk_widget_set_sensitive( ud->widgets[WIDGET_BROADCASTVALUE2], enabled );
 	gtk_widget_set_sensitive( ud->widgets[WIDGET_BROADCASTVALUE3], enabled );

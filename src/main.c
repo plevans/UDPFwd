@@ -21,6 +21,55 @@
 #include "peprintf.h"
 
 
+int UFD_initialiseRemoteList( UdpFwdData *ud, GtkBuilder *bld ) {
+	GtkTreeViewColumn *column;
+	GtkCellRenderer *renderer;
+	GtkTreeSelection *treeSelect;
+
+	if( 	!(ud->widgets[WIDGET_REMOTELIST] = GTK_WIDGET( gtk_builder_get_object (bld, "RemoteConnectionList") )) ||
+			!(ud->widgets[WIDGET_REMOTESTORE] = GTK_WIDGET( gtk_builder_get_object (bld, "RemoteConnectionStore") )) ||
+			!(ud->widgets[WIDGET_ADDREMOTE] = GTK_WIDGET( gtk_builder_get_object (bld, "ButtonAddRemote") )) ||
+			!(ud->widgets[WIDGET_REMOVEREMOTE] = GTK_WIDGET( gtk_builder_get_object (bld, "ButtonRemoveRemote") )) ||
+			!(ud->widgets[WIDGET_REMOTEIP] = GTK_WIDGET( gtk_builder_get_object (bld, "AddRemoteIPEntry") )) ||
+			!(ud->widgets[WIDGET_REMOTEPORT] = GTK_WIDGET( gtk_builder_get_object (bld, "AddRemotePortEntry") ))) {
+
+		printf( "Error loading remote list widgets\n" );
+		exit(1);
+	}
+
+	/* Remote list initialisation */
+	if( !(ud->widgets[WIDGET_REMOTESTORE] = (GtkWidget*) gtk_tree_store_new( 3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT )) ) {
+		printf( "Error creating remote tree store\n" );
+		exit(1);
+	}
+
+	gtk_tree_view_set_model( GTK_TREE_VIEW(ud->widgets[WIDGET_REMOTELIST]), GTK_TREE_MODEL((GtkTreeStore*)ud->widgets[WIDGET_REMOTESTORE]) );
+
+	/* Column for IP */
+	renderer = gtk_cell_renderer_text_new();
+	column = gtk_tree_view_column_new_with_attributes(
+					 "IP     ", renderer,
+					 "text", 0,
+					  NULL);
+	gtk_tree_view_append_column( GTK_TREE_VIEW(ud->widgets[WIDGET_REMOTELIST]), column );
+
+	/* Column for Port */
+	renderer = gtk_cell_renderer_text_new();
+	column = gtk_tree_view_column_new_with_attributes(
+					 "Port", renderer,
+					 "text", 1,
+					  NULL);
+	gtk_tree_view_append_column( GTK_TREE_VIEW(ud->widgets[WIDGET_REMOTELIST]), column );
+
+	/* Set to single selection mode */
+	treeSelect = gtk_tree_view_get_selection( GTK_TREE_VIEW(ud->widgets[WIDGET_REMOTELIST]) );
+	gtk_tree_selection_set_mode( treeSelect, GTK_SELECTION_SINGLE );
+
+	return 0;
+}
+
+
+
 int UFD_initGUI( UdpFwdData *ud, GtkBuilder *bld ) {
 	int i;
 
@@ -29,25 +78,29 @@ int UFD_initGUI( UdpFwdData *ud, GtkBuilder *bld ) {
 	UFD_initialiseRemoteList( ud, bld );
 
 	ud->runLocalThread = 0;
-	ud->enableEmulation = 0;
+	ud->localThreadActive = 0;
 
 	for( i = 0; i < 9; i++ ) {
 		ud->recvParams[i].value = 0.;
 		ud->sendParams[i].value = 0.;
-		ud->recvParams[i].ID = -1;
-		ud->sendParams[i].ID = -1;
+		ud->recvParams[i].ID = 0;
+		ud->sendParams[i].ID = 0;
 	}
-
-	ud->emulateFrequency = 0.5;
 
 	ud->nrecvParams = 0;
 	ud->nsendParams = 0;
+
+	ud->remotes = NULL;
+	ud->nRemotes = 0;
+
+	//ud->recvHILSocket = ud->recvInternetSocket = -1;
 
 	return 0;
 }
 
 
 int UFD_intialiseParameterWidgets( UdpFwdData *ud, GtkBuilder *bld ) {
+
 	if(
 			!(ud->widgets[WIDGET_LOCALPORT] = GTK_WIDGET( gtk_builder_get_object (bld, "EntryLocalPort") )) ||
 			!(ud->widgets[WIDGET_HILIP] = GTK_WIDGET( gtk_builder_get_object (bld, "EntryHILIP") )) ||
@@ -110,11 +163,6 @@ int UFD_intialiseParameterWidgets( UdpFwdData *ud, GtkBuilder *bld ) {
 			!(ud->widgets[WIDGET_RECVTS8] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamTimestampEntry17") )) ||
 			!(ud->widgets[WIDGET_RECVTS9] = GTK_WIDGET( gtk_builder_get_object (bld, "ParamTimestampEntry18") )) ||
 
-			!(ud->widgets[WIDGET_REMOTELIST] = GTK_WIDGET( gtk_builder_get_object (bld, "RemoteConnectionList") )) ||
-			!(ud->widgets[WIDGET_REMOTESTORE] = GTK_WIDGET( gtk_builder_get_object (bld, "RemoteConnectionStore") )) ||
-			!(ud->widgets[WIDGET_ADDREMOTE] = GTK_WIDGET( gtk_builder_get_object (bld, "ButtonAddRemote") )) ||
-			!(ud->widgets[WIDGET_REMOVEREMOTE] = GTK_WIDGET( gtk_builder_get_object (bld, "ButtonRemoveRemote") )) ||
-
 			!(ud->widgets[WIDGET_BROADCASTBUTTON] = GTK_WIDGET( gtk_builder_get_object (bld, "ButtonBroadcast") )) ||
 
 			!(ud->widgets[WIDGET_BROADCASTTS] = GTK_WIDGET( gtk_builder_get_object (bld, "BroadcastTimestampEntry") )) ||
@@ -140,17 +188,19 @@ int UFD_intialiseParameterWidgets( UdpFwdData *ud, GtkBuilder *bld ) {
 			!(ud->widgets[WIDGET_MENULOCALSTART] = GTK_WIDGET( gtk_builder_get_object (bld, "MenuOpenPort") )) ||
 			!(ud->widgets[WIDGET_MENULOCALSTOP] = GTK_WIDGET( gtk_builder_get_object (bld, "MenuClosePort") )) ||
 			!(ud->widgets[WIDGET_MENUREMOTESTART] = GTK_WIDGET( gtk_builder_get_object (bld, "MenuEnableRemote") )) ||
-			!(ud->widgets[WIDGET_MENUREMOTESTOP] = GTK_WIDGET( gtk_builder_get_object (bld, "MenuDisableRemote") ))
+			!(ud->widgets[WIDGET_MENUREMOTESTOP] = GTK_WIDGET( gtk_builder_get_object (bld, "MenuDisableRemote") )) ||
+
+			!(ud->widgets[WIDGET_INTERNETPORT] = GTK_WIDGET( gtk_builder_get_object (bld, "EntryRemotePort") ))
 	) {
 		printf( "Error loading parameter widgets\n" );
 		exit(1);
 	}
+
+
 	return 0;
 }
 
-int UFD_initialiseRemoteList( UdpFwdData *ud, GtkBuilder *bld ) {
 
-}
 
 int main( int argc, char *argv[] ) {
     GtkBuilder      *builder;
@@ -208,7 +258,7 @@ int main( int argc, char *argv[] ) {
     g_object_unref( G_OBJECT( builder ) );
 
     /* Disable all GUI elements except for local IP parameters */
-    UFD_enableRemoteList( &ud, FALSE ) ;
+    UFD_enableRemoteList( &ud, TRUE ) ;
     UFD_enableModelParams( &ud, FALSE );
     UFD_enableBroadcast( &ud, FALSE );
     UFD_enableHILIP( &ud, TRUE );
@@ -224,7 +274,7 @@ int main( int argc, char *argv[] ) {
     gtk_widget_set_sensitive( ud.widgets[WIDGET_MENULOCALSTOP], FALSE );
 
     /* Disable the remote menu options as this feature isnt yet implemented */
-    gtk_widget_set_sensitive( ud.widgets[WIDGET_MENUREMOTESTART], FALSE );
+    gtk_widget_set_sensitive( ud.widgets[WIDGET_MENUREMOTESTART], TRUE );
     gtk_widget_set_sensitive( ud.widgets[WIDGET_MENUREMOTESTOP], FALSE );
 
     peprintf( PEPSTR_HILI, NULL, "complete\n" );

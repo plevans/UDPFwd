@@ -9,6 +9,22 @@
  *
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "udpfwd.h"
+
+#include <gtk/gtk.h>
+#include <gdk/gdk.h>
+#include <glib.h>
+
+#include "peprintf.h"
 
 
 
+
+int UFD_broadcastParametersToRemoteList( UdpFwdData *ud ) {
+	GtkTreeModel *m;
+	GtkTreeSelection *s;
+
+}

@@ -34,11 +34,12 @@ void UFD_updateGUISendParams( UdpFwdData *ud, UdpParameter *params, int nparams 
 	int i;
 	char buffer[1024];
 
-	/* insert new paramaters at beginning of list */
+	/* Shift existing list back */
 	for( i = nparams; i < 9; i++ ) {
 		ud->sendParams[i] = ud->sendParams[i-nparams];
 	}
 
+	/* insert new paramaters at beginning of list */
 	for( i = 0; i < nparams; i++ ) {
 		ud->sendParams[i] = params[i];
 	}
@@ -109,6 +110,88 @@ void UFD_updateGUISendParams( UdpFwdData *ud, UdpParameter *params, int nparams 
 
 }
 
+
+
+void UFD_updateGUIRecvParams( UdpFwdData *ud, UdpParameter *params, int nparams ) {
+	int i;
+	char buffer[1024];
+
+
+	/* Shift existing list back */
+	for( i = nparams; i < 9; i++ ) {
+		ud->recvParams[i] = ud->recvParams[i-nparams];
+	}
+
+	/* insert new paramaters at beginning of list */
+	for( i = 0; i < nparams; i++ ) {
+		ud->recvParams[i] = params[i];
+	}
+
+	sprintf( buffer, "%d", ud->recvParams[0].timestamp );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_RECVTS1]), buffer );
+	sprintf( buffer, "%d", ud->recvParams[0].ID );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_RECVNAME1]), buffer );
+	sprintf( buffer, "%g", ud->recvParams[0].value );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_RECVVALUE1]), buffer );
+
+	sprintf( buffer, "%d", ud->recvParams[1].timestamp );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_RECVTS2]), buffer );
+	sprintf( buffer, "%d", ud->recvParams[1].ID );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_RECVNAME2]), buffer );
+	sprintf( buffer, "%g", ud->recvParams[1].value );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_RECVVALUE2]), buffer );
+
+	sprintf( buffer, "%d", ud->recvParams[2].timestamp );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_RECVTS3]), buffer );
+	sprintf( buffer, "%d", ud->recvParams[2].ID );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_RECVNAME3]), buffer );
+	sprintf( buffer, "%g", ud->recvParams[2].value );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_RECVVALUE3]), buffer );
+
+	sprintf( buffer, "%d", ud->recvParams[3].timestamp );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_RECVTS4]), buffer );
+	sprintf( buffer, "%d", ud->recvParams[3].ID );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_RECVNAME4]), buffer );
+	sprintf( buffer, "%g", ud->recvParams[3].value );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_RECVVALUE4]), buffer );
+
+	sprintf( buffer, "%d", ud->recvParams[4].timestamp );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_RECVTS5]), buffer );
+	sprintf( buffer, "%d", ud->recvParams[4].ID );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_RECVNAME5]), buffer );
+	sprintf( buffer, "%g", ud->recvParams[4].value );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_RECVVALUE5]), buffer );
+
+	sprintf( buffer, "%d", ud->recvParams[5].timestamp );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_RECVTS6]), buffer );
+	sprintf( buffer, "%d", ud->recvParams[5].ID );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_RECVNAME6]), buffer );
+	sprintf( buffer, "%g", ud->recvParams[5].value );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_RECVVALUE6]), buffer );
+
+	sprintf( buffer, "%d", ud->recvParams[6].timestamp );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_RECVTS7]), buffer );
+	sprintf( buffer, "%d", ud->recvParams[6].ID );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_RECVNAME7]), buffer );
+	sprintf( buffer, "%g", ud->recvParams[6].value );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_RECVVALUE7]), buffer );
+
+	sprintf( buffer, "%d", ud->recvParams[7].timestamp );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_RECVTS8]), buffer );
+	sprintf( buffer, "%d", ud->recvParams[7].ID );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_RECVNAME8]), buffer );
+	sprintf( buffer, "%g", ud->recvParams[7].value );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_RECVVALUE8]), buffer );
+
+	sprintf( buffer, "%d", ud->recvParams[8].timestamp );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_RECVTS9]), buffer );
+	sprintf( buffer, "%d", ud->recvParams[8].ID );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_RECVNAME9]), buffer );
+	sprintf( buffer, "%g", ud->recvParams[8].value );
+	gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_RECVVALUE9]), buffer );
+
+}
+
 gboolean UFD_updateGUISendParams_thread( gpointer userdata ) {
 	UdpParameterList* pl = (UdpParameterList*) userdata;
 
@@ -116,6 +199,19 @@ gboolean UFD_updateGUISendParams_thread( gpointer userdata ) {
 
 	UFD_updateGUISendParams( udptr, pl->params, pl->nparams );
 
+	free( pl );
+
+	return G_SOURCE_REMOVE;
+}
+
+gboolean UFD_updateGUIRecvParams_thread( gpointer userdata ) {
+	UdpParameterList* pl = (UdpParameterList*) userdata;
+
+	if( !udptr ) return G_SOURCE_REMOVE;
+
+	UFD_updateGUIRecvParams( udptr, pl->params, pl->nparams );
+
+	free( pl->params );
 	free( pl );
 
 	return G_SOURCE_REMOVE;

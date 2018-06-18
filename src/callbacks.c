@@ -92,11 +92,14 @@ G_MODULE_EXPORT void UFD_openPort( GtkWidget *button, gpointer userdata ) {
 
 G_MODULE_EXPORT void UFD_closePort( GtkWidget *button, gpointer userdata ) {
 	UdpFwdData* ud = (UdpFwdData*) userdata;
+	//char buf[1];
+
+	//buf[0] = 0x01;
 
 	peprintf( PEPSTR_HILI, NULL, "Attemping to close listening port for local HIL...\n" );
 
 	ud->runLocalThread = 0;
-	ud->enableEmulation = 0;
+	closesocket( ud->recvHILSocket );
 
 	closesocket( ud->localHILSocket );
 	ud->HILSockLen = 0;
@@ -112,26 +115,145 @@ G_MODULE_EXPORT void UFD_closePort( GtkWidget *button, gpointer userdata ) {
 
 G_MODULE_EXPORT void UFD_enableRemote( GtkWidget *button, gpointer userdata ) {
 	UdpFwdData* ud = (UdpFwdData*) userdata;
+	char *text;
+	int port;
 
-	peprintf( PEPSTR_HILI, NULL, "Remote boradcast enabled\n" );
+	UFD_enableRemoteList( ud, FALSE );
+
+	if( !(text = gtk_entry_get_text( GTK_ENTRY( ud->widgets[WIDGET_INTERNETPORT]) )) ) {
+		peprintf( PEPSTR_ERROR, NULL, "Error retrieving specified internet Port\n" );
+		return;
+	}
+
+	strncpy( ud->remotePort, text, 63 );
+
+	if( strlen(ud->remotePort) <= 0 ) {
+		peprintf( PEPSTR_ERROR, NULL, "Invalid internet listening Port\n" );
+		return;
+	}
+
+	/* Start a thread to handle listening for data from local HIL */
+	peprintf( PEPSTR_HILI, NULL, "Starting remote comms listening thread...\n" );
+	ud->runRemoteThread = 1;
+	if( !g_thread_new( "SimulationThread",(GThreadFunc) &UFD_remoteRecvThread, userdata ) ) {
+		peprintf( PEPSTR_ERROR, NULL, "Failed to fork local comms thread\n" );
+		ud->runRemoteThread = 0;
+	}
+
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_MENUREMOTESTOP], TRUE );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_MENUREMOTESTART], FALSE );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_INTERNETPORT], FALSE );
+
 }
+
 
 G_MODULE_EXPORT void UFD_disableRemote( GtkWidget *button, gpointer userdata ) {
 	UdpFwdData* ud = (UdpFwdData*) userdata;
+	//char buf[1];
 
-	peprintf( PEPSTR_HILI, NULL, "Remote broadcast disabled\n" );
+	//buf[0] = 0x01;
+
+	peprintf( PEPSTR_HILI, NULL, "Attemping to close listening port for local HIL...\n" );
+
+	ud->runRemoteThread = 0;
+	closesocket( ud->recvInternetSocket );
+
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_MENUREMOTESTOP], FALSE );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_MENUREMOTESTART], TRUE );
+	gtk_widget_set_sensitive( ud->widgets[WIDGET_INTERNETPORT], TRUE );
+
+	UFD_enableRemoteList( ud, TRUE );
 }
 
 G_MODULE_EXPORT void UFD_addRemote( GtkWidget *button, gpointer userdata ) {
-	UdpFwdData* ud = (UdpFwdData*) userdata;
+	UdpFwdData *ud = (UdpFwdData*) userdata;
+	GtkTreeIter iter;
+	const char *ipStr;
+	const char *portStr;
+	int rid;
 
-	peprintf( PEPSTR_HILI, NULL, "Remote address added\n" );
+	ipStr = gtk_entry_get_text( GTK_ENTRY(ud->widgets[WIDGET_REMOTEIP]) );
+	portStr = gtk_entry_get_text( GTK_ENTRY(ud->widgets[WIDGET_REMOTEPORT]) );
+
+	if( ipStr && strlen(ipStr) > 6 && portStr && strlen(portStr) > 0 ) {
+		peprintf( PEPSTR_HILI, NULL, "Creating socket for transmitting to remote %s:%s...", ipStr, portStr );
+
+		/* Add connection structure to main data structure */
+		rid = ud->nRemotes++;
+		if( !(ud->remotes = realloc( ud->remotes, ud->nRemotes*sizeof(UdpRemoteConnection))) ) {
+			ud->nRemotes--;
+			peprintf( PEPSTR_ERROR, NULL, "Failed to allocated for new remote connection\n" );
+			return;
+		}
+
+		/* Create a socket to handle sending data to local HIL */
+		ud->remotes[rid].sockLen = sizeof(ud->HILSockAddr);
+
+		/* create socket */
+		if ( ( ud->remotes[rid].socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == SOCKET_ERROR ) {
+			peprintf( PEPSTR_ERROR, NULL, "socket() failed with error code : %d\n" , WSAGetLastError());
+			return;
+		}
+
+		/* setup address structure */
+		memset( (char*) &ud->remotes[rid].sockAddr, 0, sizeof(ud->HILSockAddr) );
+		ud->remotes[rid].sockAddr.sin_family = AF_INET;
+		ud->remotes[rid].sockAddr.sin_port = htons( atoi(portStr) );
+		ud->remotes[rid].sockAddr.sin_addr.S_un.S_addr = inet_addr( ipStr );
+
+		strcpy( ud->remotes[rid].ipStr, ipStr );
+		strcpy( ud->remotes[rid].portStr, portStr );
+
+		/* Add to visible list */
+		gtk_tree_store_append( GTK_TREE_STORE((GtkTreeStore*)ud->widgets[WIDGET_REMOTESTORE]), &iter, NULL );
+		gtk_tree_store_set( GTK_TREE_STORE((GtkTreeStore*)ud->widgets[WIDGET_REMOTESTORE]), &iter, 0, ipStr, 1, portStr, 2, rid, -1 );
+
+		peprintf( PEPSTR_HILI, NULL, "done\n" );
+		gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_REMOTEIP]), "" );
+		gtk_entry_set_text( GTK_ENTRY(ud->widgets[WIDGET_REMOTEPORT]), "" );
+	} else {
+		peprintf( PEPSTR_WARN, NULL, "Not adding remote, port or IP invalid\n" );
+	}
 }
 
 G_MODULE_EXPORT void UFD_removeRemote( GtkWidget *button, gpointer userdata ) {
 	UdpFwdData* ud = (UdpFwdData*) userdata;
+	GtkTreeSelection *select;
+	GtkTreeIter iter;
+	GtkTreeModel *model;
+	int id = -1;
+	int i;
 
-	peprintf( PEPSTR_HILI, NULL, "Remote address removed\n" );
+	select = gtk_tree_view_get_selection( GTK_TREE_VIEW(ud->widgets[WIDGET_REMOTELIST]) );
+
+	/* Get the tree model (list_store) and initialise the iterator */
+	if( !select || !gtk_tree_selection_get_selected( select, &model, &iter ) ) return;
+
+	/* Get the selected entity */
+	gtk_tree_model_get( GTK_TREE_MODEL((GtkTreeStore*)ud->widgets[WIDGET_REMOTESTORE]), &iter, 2, &id, -1 );
+
+	/* Close socket and remove remote from internal list */
+	if( id < 0 || id >= ud->nRemotes ) {
+		peprintf( PEPSTR_WARN, NULL, "Selected remote ID seems to be out-of-range\n" );
+	} else {
+		ud->nRemotes--;
+
+		closesocket( ud->remotes[id].socket );
+
+		for( i = id; i < ud->nRemotes; i++ ) {
+			ud->remotes[i] = ud->remotes[i+1];
+		}
+
+		ud->remotes = realloc( ud->remotes, ud->nRemotes*sizeof(UdpRemoteConnection) );
+	}
+
+	/* Clear list and re-add remaining sockets */
+	gtk_tree_store_clear( GTK_TREE_MODEL((GtkTreeStore*)ud->widgets[WIDGET_REMOTESTORE]) );
+
+	for( i = 0; i < ud->nRemotes; i++ ) {
+		gtk_tree_store_append( GTK_TREE_STORE((GtkTreeStore*)ud->widgets[WIDGET_REMOTESTORE]), &iter, NULL );
+		gtk_tree_store_set( GTK_TREE_STORE((GtkTreeStore*)ud->widgets[WIDGET_REMOTESTORE]), &iter, 0, ud->remotes[i].ipStr, 1, ud->remotes[i].portStr, 2, i, -1 );
+	}
 }
 
 
@@ -148,6 +270,8 @@ G_MODULE_EXPORT void UFD_broadcastMessage( GtkWidget *button, gpointer userdata 
 
 	char buf[RECV_BUFFER_LENGTH];
 	int buflen;
+
+	UdpParameterList *pl;
 
 	str = gtk_entry_get_text( GTK_ENTRY(ud->widgets[WIDGET_BROADCASTTS]) );
 	timestamp = atoi(str);
@@ -243,21 +367,40 @@ G_MODULE_EXPORT void UFD_broadcastMessage( GtkWidget *button, gpointer userdata 
 	}
 
 	if( nparam > 0 ) {
-		buflen = UFD_encodeBuffer( buf, params, nparam, timestamp );
+		buflen = UFD_triphase_encodeBuffer( buf, params, nparam, timestamp );
 
-		peprintf( PEPSTR_INFO, NULL, "Transmitting %d bytes\n", buflen );
-
-		/* TODO: Broadcast to remote HIL ports using defined VCHV message format */
-		if( sendto( ud->localHILSocket, buf, buflen, 0, (struct sockaddr *) &ud->HILSockAddr, ud->HILSockLen ) == SOCKET_ERROR ) {
-			peprintf( PEPSTR_ERROR, NULL, "sendto() failed with error code : %d" , WSAGetLastError() );
-			return;
+		peprintf( PEPSTR_INFO, NULL, "Transmitting to HIL\n" );
+		if( UFD_sendPacketToHIL( ud, buf, buflen ) ) {
+			peprintf( PEPSTR_INFO, NULL, " - Packet sent: %d variables, %d bytes\n", nparam, buflen );
 		}
 
-		peprintf( PEPSTR_INFO, NULL, "Packet sent: %d variables, %d bytes\n", nparam, buflen );
+		buflen = UFD_internet_encodeBuffer( buf, params, nparam, timestamp );
+
+		peprintf( PEPSTR_INFO, NULL, "Transmitting to remotes\n" );
+		if( UFD_broadcastPacketToRemotes( ud, buf, buflen ) ) {
+			peprintf( PEPSTR_INFO, NULL, " - Packet sent: %d variables, %d bytes\n", nparam, buflen );
+		}
+
+		pl = malloc( sizeof( UdpParameterList) );
+
+		if( pl ) {
+			pl->params = malloc( nparam * sizeof(UdpParameter) );
+			if( pl->params ) {
+				memcpy( pl->params, params, nparam * sizeof(UdpParameter) );
+				pl->nparams = nparam;
+				gdk_threads_add_idle( UFD_updateGUIRecvParams_thread, pl );
+			} else {
+				free( pl );
+				peprintf( PEPSTR_ERROR, NULL, "Error allocating for parameter list\n" );
+			}
+		} else {
+			peprintf( PEPSTR_ERROR, NULL, "Error allocating for parameter list\n" );
+		}
 	} else {
 		peprintf( PEPSTR_INFO, NULL, "Packet not sent, no parameters specified\n" );
 	}
 }
+
 
 
 
