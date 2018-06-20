@@ -6,7 +6,6 @@ set( PROJECT_SRCS
 	outputwindow.c
 	callbacks.c
 	comms.c
-	remotelist.c
 	enableDisable.c
 	packets.c
 )
